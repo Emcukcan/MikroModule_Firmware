@@ -783,7 +783,7 @@ int UDP_COMMAND_INDEX = -1;
 //GITHUB UPDATE
 
 String FirmwareVer = {
-  "3.1.8 Micro"  //5-20-2024
+  "3.2.0 Micro"  //5-20-2024
 };
 
 
@@ -816,6 +816,7 @@ void setup() {
   Serial.setTimeout(250);
 
 
+
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
@@ -830,14 +831,14 @@ void setup() {
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
 
   //buzzer rtc equalizer setup//////////////////////////////////
-//  begin_i2cdevice();
-//  set_gpio();
-//  delay(10);
-//  uarti2c_begin(9600);
-//  delay(100);
-//  device_select(2);
-//  delay(10);
-//  RTC.begin(&I2C_0);
+  //  begin_i2cdevice();
+  //  set_gpio();
+  //  delay(10);
+  //  uarti2c_begin(9600);
+  //  delay(100);
+  //  device_select(2);
+  //  delay(10);
+  //  RTC.begin(&I2C_0);
 
   //MODBUS SLAVE ID
   // modbusid = 0x42;
@@ -846,6 +847,9 @@ void setup() {
   //setup sd
   spi_class_begin();
   delay(100);
+  //clearSD();
+  delay(100);
+
 
   //Backlight
   ledcSetup(ledChannel, freq, resolution);
@@ -1422,18 +1426,17 @@ void SDCANBUS_CODE( void * pvParameters ) {
             Serial.println("");
             Serial.println("SD Card init ok!.....................................");
             Serial.println("");
-
-
             delay(100);
             break;
           }
           else {
+
             Serial.println("");
             Serial.println("SD Card init fail.............................");
             Serial.println("");
-            if (i == 19) {
-              //pinged = true;
-            }
+            clearSD();
+            Serial.println("SD Card is resetted");
+
             delay(250);
           }
         }
@@ -1623,10 +1626,6 @@ void SDCANBUS_CODE( void * pvParameters ) {
           if (control_sd ) {
 
             delay(250);
-
-
-
-
 
             if ((FBNextRestart || BTNextRestart)) {
               Serial.println("----------------------SD Closed--------------");
@@ -5022,7 +5021,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         FooterEvent = 17;
         action_done = true;
         PageNumber = 26;
-        buzzer_function();
+
         delay(250);
       }
 
@@ -5035,7 +5034,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         Serial.println((BMS.current - 30000) * 0.1 > -2);
 
         FooterEvent = 15;
-        buzzer_function();
+
 
         if (!Safety) {
           if ((BMS.current - 30000) * 0.1 < 2 && (BMS.current - 30000) * 0.1 > -2)
@@ -5094,7 +5093,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         action_done = true;
         SafetyAlarm = false;
         AlarmLogStep = 0;
-        buzzer_function();
+
       }
 
       if (PageNumber == 1) {
@@ -5102,14 +5101,14 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 70 && y <= 266 && x >= 447 && x <= 480) {
           PageNumber = 2;
           action_done = true;
-          buzzer_function();
+
 
         }
 
         if (!action_done && y >= 70 && y <= 266 && x >= 0 && x <= 64) {
           PageNumber = 0;
           action_done = true;
-          buzzer_function();
+
         }
       }
 
@@ -5117,13 +5116,13 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 70 && y <= 266 && x >= 0 && x <= 64) {
           PageNumber = 1;
           action_done = true;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 70 && y <= 266 && x >= 447 && x <= 480) {
           PageNumber = 18;
           action_done = true;
-          buzzer_function();
+
         }
       }
 
@@ -5133,14 +5132,14 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 70 && y <= 266 && x >= 447 && x <= 480) {
           PageNumber = 29;
           action_done = true;
-          buzzer_function();
+
           Serial.println("menu size increased");
         }
 
         if (!action_done && y >= 70 && y <= 266 && x >= 0 && x <= 64) {
           PageNumber = 2;
           action_done = true;
-          buzzer_function();
+
         }
       }
 
@@ -5154,7 +5153,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 70 && y <= 266 && x >= 0 && x <= 64) {
           PageNumber = 18;
           action_done = true;
-          buzzer_function();
+
           Serial.println("menu size decreased");
         }
       }
@@ -5170,7 +5169,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           dashboard_page = dashboard_page % 11;
           action_done = true;
           Serial.println(dashboard_page);
-          buzzer_function();
+
 
 
         }
@@ -5190,7 +5189,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           preferences.putBool("UDPNR", true);
           preferences.end();
           EEPROMbusy = false;
-          buzzer_function();
+
           delay(500);
           Serial.println("It will restart to configure");
 
@@ -5207,7 +5206,8 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Restart Module Page2");
           FooterEvent = 4;
           action_done = true;
-          buzzer_function();
+          //
+          SD.end();
           delay(500);
 
           for (int i = 0; i < 100; i++ )  {
@@ -5232,7 +5232,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           preferences.putBool("UDPNR", true);
           preferences.end();
           EEPROMbusy = false;
-          buzzer_function();
+
           delay(500);
           Serial.println("It will restart to configure");
 
@@ -5247,7 +5247,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 167 && y <= 270 && x >= 173 && x <= 308) {
           Serial.println("Firmware update");
-          buzzer_function();
+
           FooterEvent = 5;
 
 
@@ -5257,7 +5257,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           preferences.putBool("UNR", true);
           preferences.end();
           EEPROMbusy = false;
-          buzzer_function();
+
           delay(500);
           Serial.println("It will restart to update firmware");
 
@@ -5277,7 +5277,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 6;
           action_done = true;
           PageNumber = 16;
-          buzzer_function();
+
           delay(500);
 
         }
@@ -5301,7 +5301,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
           preferences.end();
           EEPROMbusy = false;
-          buzzer_function();
+
           delay(500);
           Serial.println("It will restart to configure");
 
@@ -5328,7 +5328,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Main Dashboard");
           FooterEvent = 8;
           action_done = true;
-          buzzer_function();
+
           PageNumber = 0;
         }
 
@@ -5336,7 +5336,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Cell Monitoring");
           FooterEvent = 9;
           PageNumber = 3;
-          buzzer_function();
+
         }
 
 
@@ -5344,21 +5344,21 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Network Settings");
           FooterEvent = 10;
           PageNumber = 4;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 167 && y <= 270 && x >= 173  && x <= 308) {
           Serial.println("Dry Contact Settings");
           FooterEvent = 11;
           PageNumber = 5;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 62 && y <= 165 && x >= 310  && x <= 425) {
           Serial.println("Daily Stats");
           FooterEvent = 12;
           PageNumber = 6;
-          buzzer_function();
+
         }
 
 
@@ -5368,7 +5368,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           action_done = true;
           PageNumber = 17;
           ReadAllParameters = true;
-          buzzer_function();
+
 
 
         }
@@ -5382,7 +5382,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 14;
           action_done = true;
           PageNumber = 19;
-          buzzer_function();
+
           delay(250);
         }
 
@@ -5391,7 +5391,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 65;
           action_done = true;
           PageNumber = 28;
-          buzzer_function();
+
           delay(250);
         }
 
@@ -5403,7 +5403,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 17;
           action_done = true;
           PageNumber = 26;
-          buzzer_function();
+
           delay(250);
         }
 
@@ -5413,7 +5413,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 17;
           action_done = true;
           PageNumber = 26;
-          buzzer_function();
+
           delay(250);
         }
 
@@ -5426,7 +5426,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 50;
           PageNumber = 21;
           action_done = true;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 167 && y <= 270 && x >= 310  && x <= 425) {
@@ -5434,7 +5434,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 55;
           PageNumber = 24;
           action_done = true;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 167 && y <= 270 && x >= 36  && x <= 171) {
@@ -5450,7 +5450,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           action_done = true;
           PageNumber = 22;
           delay(250);
-          buzzer_function();
+
         }
       }
 
@@ -5463,7 +5463,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 218 && y <= 268 && x >= 0  && x <= 480) {
           Serial.println(ContactNameListIndex);
-          buzzer_function();
+
 
           switch (ContactNameListIndex) {
             case 0:
@@ -5532,7 +5532,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         }
 
         if (!action_done && y >= 62 && y <= 112 && x >= 241  && x <= 480) {
-          buzzer_function();
+
           PageNumber = 23;
           Serial.println("numpadopen");
           action_done = true;
@@ -5542,7 +5542,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
 
         if (!action_done && y >= 114 && y <= 164 && x >= 241  && x <= 480) {
-          buzzer_function();
+
           PageNumber = 23;
           Serial.println("numpadopen");
           action_done = true;
@@ -5555,7 +5555,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           ContactNameListIndex = ContactNameListIndex % 4;
           Serial.println("ContactName is changed");
           action_done = true;
-          buzzer_function();
+
         }
 
 
@@ -5565,7 +5565,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           OperationListIndex = OperationListIndex % 2;
           Serial.println("ContactCondition is changed");
           action_done = true;
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 166 && y <= 216 && x >= 0  && x <= 480) {
@@ -5573,7 +5573,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           ContactFunctionListIndex = ContactFunctionListIndex % 9;
           Serial.println("ContactFunction is changed");
           action_done = true;
-          buzzer_function();
+
         }
       }
 
@@ -5586,7 +5586,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           FooterEvent = 61;
           PageNumber = 27;
           action_done = true;
-          buzzer_function();
+
         }
 
 
@@ -5609,13 +5609,13 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
           action_done = true;
           delay(250);
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 62 && y <= 122 && x >= 241 && x <= 480) {
           Serial.println("Safety Toggle");
           FooterEvent = 15;
-          buzzer_function();
+
 
           if (!Safety) {
             if ((BMS.current - 30000) * 0.1 < 2 && (BMS.current - 30000) * 0.1 > -2)
@@ -5642,7 +5642,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 124 && y <= 184 && x >= 0 && x <= 239) {
           Serial.println("OPEN CAN ID NUMPAD");
-          buzzer_function();
+
           FooterEvent = 54;
           action_done = true;
           PageNumber = 25;
@@ -5650,7 +5650,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 186 && y <= 236 && x >= 0 && x <= 480) {
           Serial.println("now it s setting can id");
-          buzzer_function();
+
           FooterEvent = 56;
           action_done = true;
           SetCANID = true;
@@ -5680,7 +5680,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Inverter Brands toggled");
           action_done = true;
           delay(250);
-          buzzer_function();
+
 
           if (indexINVERTERSArray < 16) {
             indexINVERTERSArray++;
@@ -5692,7 +5692,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 124 && y <= 184 && x >= 0 && x <= 239) {
           Serial.println("comm method toggled");
-          buzzer_function();
+
           action_done = true;
 
           if (indexCOMMArray < 1) {
@@ -5707,7 +5707,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 186 && y <= 236 && x >= 0 && x <= 480) {
           Serial.println("setting inverter comm");
-          buzzer_function();
+
           action_done = true;
           METHOD = indexCOMMArray;
           TYPE = indexINVERTERSArray;
@@ -5767,7 +5767,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
       if (PageNumber == 27) { // "Language Select"
         if (!action_done && y >= 62 && y <= 112 && x >= 80 && x <= 400) { //open numpad for SOC
           Serial.println("Turkish");
-          buzzer_function();
+
           action_done = true;
           indexLanguageArray = 1;
           FooterEvent = 63;
@@ -5783,7 +5783,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 114 && y <= 164 && x >= 80 && x <= 400) { //open numpad for SOC
           Serial.println("English");
-          buzzer_function();
+
           action_done = true;
           indexLanguageArray = 0;
           FooterEvent = 63;
@@ -5796,7 +5796,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 166 && y <= 216 && x >= 80 && x <= 400) { //open numpad for SOC
           Serial.println("German");
-          buzzer_function();
+
           action_done = true;
           indexLanguageArray = 2;
           FooterEvent = 63;
@@ -5809,7 +5809,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 218 && y <= 268 && x >= 80 && x <= 400) { //open numpad for SOC
           Serial.println("French");
-          buzzer_function();
+
           action_done = true;
           indexLanguageArray = 3;
           FooterEvent = 63;
@@ -5829,7 +5829,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
       if (PageNumber == 28) {
         if (!action_done && y >= 60 && y <= 160 && x >= 326 && x <= 480) { //open numpad for SOC
           Serial.println("Simulation Status toggled");
-          buzzer_function();
+
           SimulationStatus = !SimulationStatus;
 
 
@@ -5923,7 +5923,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
       if (PageNumber == 4) {
         if (!action_done && y >= 218 && y <= 268 && x >= 0 && x <= 480) { //open numpad for SOC
           Serial.println("resetNettwork");
-          buzzer_function();
+
           wifiManager.resetSettings();
           Serial.println("forget password");
           delay(1000);
@@ -5933,7 +5933,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
       if (PageNumber == 6) {
         if (!action_done && y >= 218 && y <= 268 && x >= 0 && x <= 480) { //open numpad for SOC
-          buzzer_function();
+
           MaxTemp1 = 0;
           MaxTemp2 = 0;
           MaxVoltage = 0;
@@ -5951,7 +5951,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
       if (PageNumber == 20) {
         if (!action_done && y >= 62 && y <= 164 && x >= 0 && x <= 102) { //open numpad for SOC
           Serial.println("calibration is increased");
-          buzzer_function();
+
           if (CalibrationValue <= 400) {
             CalibrationValue = CalibrationValue + 10;
           }
@@ -5960,7 +5960,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 166 && y <= 266 && x >= 0 && x <= 102) { //open numpad for SOC
           Serial.println("calibration is decreased");
-          buzzer_function();
+
           if (CalibrationValue >= -400) {
             CalibrationValue = CalibrationValue - 10;
           }
@@ -5970,7 +5970,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 62 && y <= 164 && x >= 378 && x <= 480) { //open numpad for SOC
           Serial.println("calibration is done");
-          buzzer_function();
+
           CURRENT_CAL = true;
           CalibrationStatus = 2;
           FooterEvent = 18;
@@ -5979,7 +5979,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 166 && y <= 266 && x >= 378 && x <= 480) { //open numpad for SOC
           CalibrationStatus = 2;
-          buzzer_function();
+
           CURRENT_ZERO_CAL = true;
           FooterEvent = 18;
 
@@ -5991,7 +5991,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
       if (PageNumber == 23) {
         if (!action_done && y >= 65 && y <= 127 && x >= 390 && x <= 465 && numpadValue.length() < 9) { //7 BUTTON
-          buzzer_function();
+
           Serial.println("OK");
           action_done = true;
 
@@ -6015,7 +6015,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 10 && x <= 65 && numpadValue.length() < 8 ) { //7 BUTTON
-          buzzer_function();
+
           Serial.println("1");
           action_done = true;
           numpadValue = numpadValue + "1";
@@ -6023,7 +6023,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 199 && y <= 261 && x >= 10 && x <= 65 && numpadValue.length() < 8 ) { //7 BUTTON
           Serial.println("6");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "6";
         }
@@ -6031,7 +6031,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 199 && y <= 261 && x >= 70 && x <= 125 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("7");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "7";
         }
@@ -6039,13 +6039,13 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 132 && y <= 194 && x >= 70 && x <= 125 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("2");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "2";
         }
 
         if (!action_done && y >= 199 && y <= 261 && x >= 130 && x <= 185 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("8");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "8";
         }
@@ -6054,21 +6054,21 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 132 && y <= 194 && x >= 130 && x <= 185 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("3");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "3";
         }
 
         if (!action_done && y >= 199 && y <= 261 && x >= 190 && x <= 245 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("9");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "9";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 190 && x <= 245 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("4");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "4";
         }
 
@@ -6076,27 +6076,27 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 199 && y <= 261 && x >= 250 && x <= 305 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("0");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "0";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 250 && x <= 305 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("5");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "5";
         }
 
         if (!action_done && y >= 199 && y <= 261 && x >= 310 && x <= 385 ) { //7 BUTTON
           Serial.println(".");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + ".";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 310 && x <= 385 ) { //7 BUTTON
           Serial.println("BACK");
-          buzzer_function();
+
           action_done = true;
           numpadValue = "";
           PageNumber = 22;
@@ -6106,14 +6106,14 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 199 && y <= 261 && x >= 390 && x <= 465 ) { //7 BUTTON
           Serial.println("CLR");
           action_done = true;
-          buzzer_function();
+
           numpadValue = "";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 390 && x <= 465 ) { //7 BUTTON
           Serial.println("DEL");
           action_done = true;
-          buzzer_function();
+
           int numpadLength = numpadValue.length();
           numpadValue.remove(numpadLength - 1, 1);
         }
@@ -6125,7 +6125,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 65 && y <= 127 && x >= 390 && x <= 465 && numpadValue.length() < 9) { //7 BUTTON
           Serial.println("OK");
           action_done = true;
-          buzzer_function();
+
           SettedCANID = numpadValue.toInt();
           Serial.println("Setted CANID:" + numpadValue);
           numpadValue = "";
@@ -6135,7 +6135,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
 
         if (!action_done && y >= 132 && y <= 194 && x >= 10 && x <= 65 && numpadValue.length() < 8 ) { //7 BUTTON
           Serial.println("1");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "1";
         }
@@ -6143,14 +6143,14 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 199 && y <= 261 && x >= 10 && x <= 65 && numpadValue.length() < 8 ) { //7 BUTTON
           Serial.println("6");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "6";
         }
 
 
         if (!action_done && y >= 199 && y <= 261 && x >= 70 && x <= 125 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("7");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "7";
         }
@@ -6158,21 +6158,21 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 132 && y <= 194 && x >= 70 && x <= 125 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("2");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "2";
         }
 
         if (!action_done && y >= 199 && y <= 261 && x >= 130 && x <= 185 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("8");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "8";
         }
 
 
         if (!action_done && y >= 132 && y <= 194 && x >= 130 && x <= 185 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("3");
-          buzzer_function();
+
           action_done = true;
           numpadValue = numpadValue + "3";
         }
@@ -6180,14 +6180,14 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 199 && y <= 261 && x >= 190 && x <= 245 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("9");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "9";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 190 && x <= 245 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("4");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "4";
         }
 
@@ -6195,28 +6195,28 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
         if (!action_done && y >= 199 && y <= 261 && x >= 250 && x <= 305 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("0");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "0";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 250 && x <= 305 && numpadValue.length() < 8) { //7 BUTTON
           Serial.println("5");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + "5";
         }
 
         if (!action_done && y >= 199 && y <= 261 && x >= 310 && x <= 385 ) { //7 BUTTON
           Serial.println(".");
           action_done = true;
-          buzzer_function();
+
           numpadValue = numpadValue + ".";
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 310 && x <= 385 ) { //7 BUTTON
           Serial.println("BACK");
           action_done = true;
-          buzzer_function();
+
           numpadValue = "";
           PageNumber = 22;
         }
@@ -6226,7 +6226,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("CLR");
           action_done = true;
           numpadValue = "";
-          buzzer_function();
+
         }
 
         if (!action_done && y >= 132 && y <= 194 && x >= 390 && x <= 465 ) { //7 BUTTON
@@ -6234,7 +6234,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           action_done = true;
           int numpadLength = numpadValue.length();
           numpadValue.remove(numpadLength - 1, 1);
-          buzzer_function();
+
         }
       }
 
@@ -6245,7 +6245,7 @@ void TOUCH_SCREEN_CODE( void * pvParameters ) {
           Serial.println("Inverter Selection");
           FooterEvent = 2;
           action_done = true;
-          buzzer_function();
+
           PageNumber = 30;
 
 
@@ -7045,8 +7045,8 @@ void getBatteryParameters() {
           // Serial.println("ID 93 is requested...");
           BMS_recieve(0x93);
 
-//          Serial.println("Charge:" + String(BMS.charge));
-//          Serial.println("Discharge:" + String(BMS.discharge));
+          //          Serial.println("Charge:" + String(BMS.charge));
+          //          Serial.println("Discharge:" + String(BMS.discharge));
 
 
 
@@ -10687,6 +10687,49 @@ void drawCellSirius() {
 
   }
 
+  ///////////////////////
+
+
+  else  if (ReadCellMod == 14) {
+
+    for (int i = 0; i < 14; i++) {
+
+      if (!SimMode) {
+        CellValues[i] = BMS.cell_voltage[i] * 0.001;
+      }
+      else {
+        CellValues[i] = 3.2 + random(1, 10) * 0.01;
+      }
+
+      SumVoltage = SumVoltage + CellValues[i];
+
+      if (MaxVoltage < CellValues[i])
+        MaxVoltage = CellValues[i];
+
+      if (MinVoltage > CellValues[i])
+        MinVoltage = CellValues[i];
+
+    }
+    AverageVoltage = SumVoltage / 14;
+
+
+
+
+    for (int i = 0; i < 14; i++) {
+      NormCellValues[i] = ((CellValues[i] - MinVoltage * 0.99) / (MaxVoltage - MinVoltage * 0.99)) * 120;
+      NormSumVoltage = NormSumVoltage + NormCellValues[i];
+
+      if (NormMaxVoltage < NormCellValues[i])
+        NormMaxVoltage = NormCellValues[i];
+
+      if (NormMinVoltage > NormCellValues[i])
+        NormMinVoltage = NormCellValues[i];
+    }
+
+    NormAverageVoltage = NormSumVoltage / 14;
+
+  }
+
 
 
 
@@ -10965,6 +11008,14 @@ void drawCellSirius() {
     //Serial.println("for loop is finished#3");
   }
 
+  if (ReadCellMod == 14) {
+    PageFrame.setTextDatum(MC_DATUM);
+    for (int i = 0; i < 14; i++) {
+      PageFrame.fillRect(34 + i * 23, 175, 5, 5, TFT_SILVER);
+      PageFrame.drawString("#" + String(i + 1) , 32 + i * 24, 188 );
+    }
+  }
+
 
   else if (ReadCellMod == 30) {
     PageFrame.setTextDatum(MC_DATUM);
@@ -11068,6 +11119,12 @@ void drawCellSirius() {
   else if (ReadCellMod == 8) {
     for (int i = 0; i < 8; i++) {
       PageFrame.fillRect(30 + i * 40 , 170 - NormCellValues[i], 25, NormCellValues[i] , TOLGA_YELLOW);
+    }
+  }
+
+  if (ReadCellMod == 14) {
+    for (int i = 0; i < 14; i++) {
+      PageFrame.fillRect(30 + i * 23, 170 - NormCellValues[i], 18, NormCellValues[i] , TOLGA_YELLOW);
     }
   }
 
@@ -13147,8 +13204,19 @@ void createDirectory() {
 
   createDir(SD, "/Stat");
   createDir(SD, "/Datalogger");
+}
 
-
+void clearSD()
+{
+  byte sd = 0;
+  digitalWrite(SD_CS_PIN, LOW);
+  while (sd != 255)
+  {
+    sd = SPI.transfer(255);
+    Serial.print("clear sd result=");
+    Serial.println(sd);
+  }
+  digitalWrite(SD_CS_PIN, HIGH);
 }
 
 
